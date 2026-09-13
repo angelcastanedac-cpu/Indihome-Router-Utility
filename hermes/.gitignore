@@ -1,0 +1,10 @@
+node_modules/
+.env
+state/
+wa-auth/
+*.log
+
+# El workspace es del agente: solo versionamos su configuracion.
+workspace/*
+!workspace/.claude/
+!workspace/CLAUDE.md

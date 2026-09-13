@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__whatsapp__resolve",
+      "mcp__whatsapp__status",
+      "mcp__whatsapp__list_chats",
+      "mcp__whatsapp__read_chat",
+      "mcp__whatsapp__send",
+      "Bash(himalaya envelope:*)",
+      "Bash(himalaya message read:*)",
+      "Bash(himalaya folder list:*)",
+      "Bash(himalaya account list:*)",
+      "Read",
+      "Glob",
+      "Grep"
+    ],
+    "deny": [
+      "Bash(himalaya message delete:*)",
+      "Bash(rm:*)",
+      "Read(./.env)",
+      "Read(../.env)",
+      "Read(../wa-auth/**)"
+    ]
+  }
+}

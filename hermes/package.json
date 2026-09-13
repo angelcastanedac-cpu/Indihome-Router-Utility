@@ -1,0 +1,21 @@
+{
+  "name": "hermes",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Agente personal: Telegram como consola, WhatsApp via Baileys, correo via Himalaya.",
+  "scripts": {
+    "wa": "node src/wa/daemon.js",
+    "bridge": "node src/telegram/bridge.js",
+    "mcp": "node src/mcp/whatsapp.js",
+    "test": "node test/mcp.test.mjs",
+    "check": "node --check src/wa/daemon.js && node --check src/mcp/whatsapp.js && node --check src/telegram/bridge.js && node --check src/config.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "latest",
+    "@whiskeysockets/baileys": "^7.0.0",
+    "pino": "^9.0.0",
+    "qrcode-terminal": "^0.12.0"
+  },
+  "engines": { "node": ">=20" }
+}

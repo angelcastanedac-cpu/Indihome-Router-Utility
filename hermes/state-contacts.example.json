@@ -1,0 +1,6 @@
+{
+  "_comentario": "Copia esto a state/contacts.json. Numeros sin +, sin espacios. Un numero de 10 digitos asume lada 52.",
+  "luisa": "3312345678",
+  "gaby": "3398765432",
+  "patricio": "3311223344"
+}

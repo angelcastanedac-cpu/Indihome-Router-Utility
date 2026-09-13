@@ -1,0 +1,17 @@
+[Unit]
+Description=Hermes - daemon de WhatsApp (Baileys)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=angel
+WorkingDirectory=/home/angel/hermes
+ExecStart=/usr/bin/node src/wa/daemon.js
+Restart=always
+RestartSec=10
+StandardOutput=append:/home/angel/hermes/wa.log
+StandardError=append:/home/angel/hermes/wa.log
+
+[Install]
+WantedBy=multi-user.target

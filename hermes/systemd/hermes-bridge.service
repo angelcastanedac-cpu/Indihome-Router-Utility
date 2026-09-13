@@ -1,0 +1,17 @@
+[Unit]
+Description=Hermes - bridge de Telegram
+After=hermes-wa.service
+Wants=hermes-wa.service
+
+[Service]
+Type=simple
+User=angel
+WorkingDirectory=/home/angel/hermes
+ExecStart=/usr/bin/node src/telegram/bridge.js
+Restart=always
+RestartSec=10
+StandardOutput=append:/home/angel/hermes/bridge.log
+StandardError=append:/home/angel/hermes/bridge.log
+
+[Install]
+WantedBy=multi-user.target

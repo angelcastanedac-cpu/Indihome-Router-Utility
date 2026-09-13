@@ -1,0 +1,32 @@
+# Copia esto a ~/.config/himalaya/config.toml y ajusta.
+# Gmail/iCloud con 2FA necesitan app password, no tu contraseña normal.
+# Gmail: https://myaccount.google.com/apppasswords
+# iCloud: https://account.apple.com > Seguridad > Contraseñas especificas
+
+[accounts.personal]
+default = true
+email = "tucorreo@gmail.com"
+display-name = "Angel Castañeda"
+
+backend.type = "imap"
+backend.host = "imap.gmail.com"
+backend.port = 993
+backend.login = "tucorreo@gmail.com"
+backend.encryption.type = "tls"
+# Lee el password de un comando: nunca lo pongas en texto plano aqui.
+backend.auth.type = "password"
+backend.auth.command = "secret-tool lookup service himalaya-personal"
+
+message.send.backend.type = "smtp"
+message.send.backend.host = "smtp.gmail.com"
+message.send.backend.port = 465
+message.send.backend.login = "tucorreo@gmail.com"
+message.send.backend.encryption.type = "tls"
+message.send.backend.auth.type = "password"
+message.send.backend.auth.command = "secret-tool lookup service himalaya-personal"
+
+# Guardar el password (Linux, una sola vez):
+#   secret-tool store --label="himalaya personal" service himalaya-personal
+# En macOS usa el llavero:
+#   security add-generic-password -s himalaya-personal -a tucorreo@gmail.com -w
+#   auth.command = "security find-generic-password -s himalaya-personal -w"
