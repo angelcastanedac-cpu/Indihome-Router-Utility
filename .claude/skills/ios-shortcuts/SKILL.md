@@ -73,6 +73,73 @@ Si una app no tiene acciones nativas de Shortcuts, se puede invocar por su **URL
 3. Tu servidor responde JSON; el shortcut lo parsea con **Get Dictionary Value** y actúa (notificación, TTS con "Speak Text", guardar en Notas, etc.).
 4. Si necesitas dispararlo desde tu sistema (no desde el teléfono), usa el CLI `shortcuts run` en el Mac, o el URL scheme `shortcuts://run-shortcut` desde cualquier proceso que pueda abrir URLs.
 
+## 9. Ejemplo completo: "Router OK?" (chequeo de salud de un router ZTE remoto)
+Atajo para ver desde el iPhone si el router de una propiedad rentada (Balanty T2/T4, Bosques) está en línea y cuántos equipos tiene conectados, sin llamar al inquilino. Usa los tres apps: **Shortcuts** orquesta, **Actions** hace el ping rápido, **Scriptable** habla con el router y arma el resumen.
+
+### 9.1 Datos previos
+Ten a la mano, por propiedad, la IP o el DNS con el que alcanzas el router y (si expones uno) el endpoint de estado. Ejemplo de tabla mental:
+- Balanty T2 → `bal-t2.tudominio.net` (o IP pública/VPN)
+- Balanty T4 → `bal-t4.tudominio.net`
+- Bosques → `bosques.tudominio.net`
+
+> El router ZTE de fábrica no da un JSON de estado bonito; lo normal es exponerlo tú desde tu servidor/VPN (tu PatoCiber) que consulta el router y devuelve algo como `{"online":true,"clientes":4}`. El script de abajo asume ese endpoint; si solo quieres "responde / no responde", te basta con el paso de Actions.
+
+### 9.2 El script de Scriptable
+Crea un script en Scriptable llamado exactamente **`RouterStatus`** y pega esto:
+```javascript
+// RouterStatus — recibe el host desde Shortcuts, consulta estado y regresa un resumen.
+const host = (args.shortcutParameter || args.queryParameters?.host || "").toString().trim();
+if (!host) { Script.setShortcutOutput("Falta el host ❌"); Script.complete(); }
+
+const url = host.startsWith("http") ? host : `https://${host}/status`;
+const req = new Request(url);
+req.timeoutInterval = 6;
+
+let resumen;
+try {
+  const j = await req.loadJSON();          // espera { online: true, clientes: N }
+  resumen = j.online
+    ? `✅ Online · ${j.clientes ?? "?"} equipos`
+    : "⚠️ Router responde pero reporta caído";
+} catch (e) {
+  resumen = "❌ Sin respuesta (posible caído o fuera de VPN)";
+}
+
+Script.setShortcutOutput(resumen);         // regresa el texto a Shortcuts
+Script.complete();
+```
+
+### 9.3 Montaje del shortcut (paso a paso)
+Nombra el shortcut **`Router OK?`** y arma estas acciones en orden:
+
+1. **Choose from Menu** (Shortcuts) — opciones: `Balanty T2`, `Balanty T4`, `Bosques`.
+2. Dentro de cada rama del menú:
+   a. **Text** (Shortcuts) → escribe el host de esa propiedad (ej. `bal-t2.tudominio.net`). Guárdalo como variable `Host`.
+   b. **Is Host Reachable** (Actions) → input: `Host`. Ping rápido antes de molestar al servidor.
+   c. **If** (Shortcuts) → si `Is Host Reachable` es falso:
+      - **Show Notification** (Actions) → "🔴 {Host}: inalcanzable". Detente aquí (Stop Shortcut).
+   d. Si es verdadero:
+      - **Run Script** (Scriptable) → Script: `RouterStatus`; en "Shortcut Input"/parámetro pasa la variable `Host`. Marca "Run in App" apagado si quieres que corra en background.
+      - **Show Notification** (Actions) → título `{nombre de la propiedad}`, cuerpo = resultado del Run Script.
+
+Resultado: tocas el atajo, eliges propiedad, y en 1–2 s te llega "Balanty T2 · ✅ Online · 4 equipos".
+
+### 9.4 Variante: correr solo cada mañana (Automation)
+1. Pestaña **Automation** → nueva → disparador **Time of Day** 8:00 am → **Run Immediately** (sin confirmar).
+2. En vez del menú, usa una **List** (Shortcuts) con los tres hosts + **Repeat with Each** → por cada uno: `Is Host Reachable` → `Run Script (RouterStatus)`.
+3. **If**: solo dispara **Show Notification** cuando algún host esté caído o reporte problema (así no te spamea si todo está bien).
+
+### 9.5 Variante: dispararlo desde tu sistema (sin tocar el teléfono)
+- Desde tu Mac/servidor, abre la URL para correr el atajo con un host específico:
+  ```
+  shortcuts://run-shortcut?name=Router%20OK%3F&input=text&text=bal-t2.tudominio.net
+  ```
+- O saltándote Shortcuts y yendo directo al script, con respuesta vía x-callback-url:
+  ```
+  scriptable:///run?scriptName=RouterStatus&host=bal-t2.tudominio.net&x-success=miapp://ok&x-error=miapp://err
+  ```
+- En Mac también: `shortcuts run "Router OK?" --input-path host.txt`.
+
 ## Fuentes
 - Guía oficial Shortcuts (Apple Support): support.apple.com/guide/shortcuts
 - Run a shortcut using a URL scheme: support.apple.com/guide/shortcuts/apd624386f42
